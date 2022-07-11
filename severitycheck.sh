@@ -10,6 +10,8 @@ GRYPE_CMD="grype"
 IMAGE=$1
 LOGFILE=$2
 SEVERITY_LEVEL=$3
+DOCKER_ENABLE_BIT=$4
+DOCKER_COMPOSE_PATH=$5
 LOGFILE_PATH=${LOG_FOLDER}${LOGFILE}
 SEVERITY_COUNT=0
 
@@ -45,5 +47,29 @@ do
 done < "$input"
 
 echo "A total number of $SEVERITY_COUNT vulnerabilities found!"
+
+if [[ $SEVERITY_COUNT -gt 0 && $DOCKER_ENABLE_BIT -eq 1 ]]
+then
+    check=1
+    read -p "Do you still want to start docker-compose up? [y/n] " yn
+    while (( $check ))
+    do 
+        case $yn in
+            [Yy])
+                cd ${DOCKER_COMPOSE_PATH}
+                eval "docker-compose up"
+                check=0
+                ;;
+            [nN])
+                check=0
+                exit_script 1
+                ;;
+            *)
+                echo "Please enter: [y/n]"
+                read -p "Do you still want to start docker-compose up? [y/n] " yn
+                ;;
+        esac
+    done
+fi
 
 exit_script 0
