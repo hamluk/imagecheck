@@ -5,24 +5,21 @@ function exit_script {
     exit $1
 }
 
+LOG_FOLDER="./logs/"
 GRYPE_CMD="grype"
-SEVERITY_LEVEL="high"
+IMAGE=$1
+LOGFILE=$2
+SEVERITY_LEVEL=$3
+LOGFILE_PATH=${LOG_FOLDER}${LOGFILE}
+SEVERITY_COUNT=0
 
 echo "Entering severitycheck script..."
-echo ""
-docker images
-echo ""
-
-read -p "Enter image name <image:tag> to test: " IMAGE
 
 ./pullimage.sh $IMAGE 
 
 result=$?
 
 if (( $result )); then exit_script 1; fi
-
-read -p "Enter filename to store vulnarablities of $IMAGE: " LOGFILE
-read -p "Enter severity level you want to check on: [high] " SEVERITY_LEVEL
 
 echo "Choosen image to be checked $IMAGE" 
 
@@ -36,10 +33,23 @@ else
     curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b /usr/local/bin
 fi
 
-if ! $GRYPE_CMD $IMAGE --fail-on $SEVERITY_LEVEL > $LOGFILE 
-then
-    echo "found severity with level => $SEVERITY_LEVEL"
-    exit_script 1
-fi
+$GRYPE_CMD $IMAGE --fail-on $SEVERITY_LEVEL > $LOGFILE_PATH
+
+input=$LOGFILE_PATH
+while IFS= read -r line
+do
+    if [[ $line == *"$SEVERITY_LEVEL"* ]]
+        then
+            ((SEVERITY_COUNT++))
+        fi
+done < "$input"
+
+echo "A total number of $SEVERITY_COUNT vulnerabilities found!"
+
+# if ! $GRYPE_CMD $IMAGE --fail-on $SEVERITY_LEVEL > ${LOG_FOLDER}${LOGFILE}
+# then
+#     echo "found severity with level => $SEVERITY_LEVEL"
+#     exit_script 1
+# fi
 
 exit_script 0
