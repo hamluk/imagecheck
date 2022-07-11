@@ -46,10 +46,4 @@ done < "$input"
 
 echo "A total number of $SEVERITY_COUNT vulnerabilities found!"
 
-# if ! $GRYPE_CMD $IMAGE --fail-on $SEVERITY_LEVEL > ${LOG_FOLDER}${LOGFILE}
-# then
-#     echo "found severity with level => $SEVERITY_LEVEL"
-#     exit_script 1
-# fi
-
 exit_script 0
