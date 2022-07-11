@@ -1,5 +1,31 @@
 #! /bin/bash
 
+function usage {
+    echo "script usage: $(basename $0) [-d <path>] [-h]" >&2
+}
+
+DOCKER_ENABLE_BIT=0
+DOCKER_COMPOSE_PATH=""
+
+while getopts 'd:h' OPTION; do
+  case "$OPTION" in
+    d)
+      echo "Run script with starting docker afterwards"
+      DOCKER_ENABLE_BIT=1
+      DOCKER_COMPOSE_PATH=$OPTARG
+      ;;
+    h)
+      usage
+	  exit 0
+      ;;
+    ?)
+      usage 
+      exit 1
+      ;;
+  esac
+done
+
+
 echo "-----------------"
 echo "Starting imagecheck..."
 
@@ -10,24 +36,24 @@ echo ""
 read -p "Enter image name <image:tag> to test: " IMAGE
 read -p "Enter filename to store vulnarablities of $IMAGE: " LOGFILE
 check=1
-read -p "Enter severity level (Negligible, Medium, High, Critical) you want to check on: [High] " SEVERITY_LEVEL
+read -p "Enter severity level [Negligible|Medium|High|Critical] you want to check on: [High] " SEVERITY_LEVEL
+if [ -z "$SEVERITY_LEVEL" ]
+then 
+    SEVERITY_LEVEL="High"
+fi
+
 while (( $check ))
 do
     if [[ "$SEVERITY_LEVEL" =~ ^(Negligible|Medium|High|Critical)$ ]]
     then 
         check=0 
     else 
-        echo "Please enter one of the following options: Negligible, Medium, High, Critical"
-        read -p "Enter severity level (Negligible, Medium, High, Critical) you want to check on: [High] " SEVERITY_LEVEL
+        echo "Please enter one of the following options: [Negligible|Medium|High|Critical]"
+        read -p "Enter severity level [Negligible|Medium|High|Critical] you want to check on: [High] " SEVERITY_LEVEL
     fi
 done
 
-if [ -z "$SEVERITY_LEVEL" ]
-then 
-    SEVERITY_LEVEL="High"
-fi
-
-./severitycheck.sh $IMAGE $LOGFILE $SEVERITY_LEVEL
+./severitycheck.sh $IMAGE $LOGFILE $SEVERITY_LEVEL $DOCKER_ENABLE_BIT $DOCKER_COMPOSE_PATH
 result=$?
 
 echo "Ending imagecheck"
