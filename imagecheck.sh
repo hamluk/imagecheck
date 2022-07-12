@@ -1,18 +1,23 @@
 #! /bin/bash
 
 function usage {
-    echo "script usage: $(basename $0) [-d <path>] [-h]" >&2
+    echo "script usage: $(basename $0) [-d <path_to_docker_compose_folder>] [-i <path_to_cve_file>] [-h]" >&2
 }
 
 DOCKER_ENABLE_BIT=0
-DOCKER_COMPOSE_PATH=""
+DOCKER_COMPOSE_PATH="null"
+CVE_ENABLE_BIT=0
+CVELOG_PATH="null"
 
-while getopts 'd:h' OPTION; do
+while getopts 'd:i:h' OPTION; do
   case "$OPTION" in
     d)
-      echo "Run script with starting docker afterwards"
       DOCKER_ENABLE_BIT=1
       DOCKER_COMPOSE_PATH=$OPTARG
+      ;;
+    i)
+      CVE_ENABLE_BIT=1
+      CVELOG_PATH=$OPTARG
       ;;
     h)
       usage
@@ -53,7 +58,7 @@ do
     fi
 done
 
-./severitycheck.sh $IMAGE $LOGFILE $SEVERITY_LEVEL $DOCKER_ENABLE_BIT $DOCKER_COMPOSE_PATH
+./severitycheck.sh $IMAGE $LOGFILE $SEVERITY_LEVEL $DOCKER_ENABLE_BIT $DOCKER_COMPOSE_PATH $CVE_ENABLE_BIT $CVELOG_PATH
 result=$?
 
 echo "Ending imagecheck"
