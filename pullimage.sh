@@ -25,7 +25,7 @@ then
                 check=0
                 ;;
             [nN])
-                echo "Please pull $IMAGE locally before testing it wit anchore/grype"
+                echo "Please pull $IMAGE locally before testing it with anchore/grype"
                 echo "Exiting script..."
                 check=0
                 exit_script 1

@@ -12,8 +12,11 @@ LOGFILE=$2
 SEVERITY_LEVEL=$3
 DOCKER_ENABLE_BIT=$4
 DOCKER_COMPOSE_PATH=$5
+CVE_ENABLE_BIT=$6
+CVELOG_PATH=$7
 LOGFILE_PATH=${LOG_FOLDER}${LOGFILE}
 SEVERITY_COUNT=0
+CVE_COUNT=0
 
 echo "Entering severitycheck script..."
 
@@ -37,16 +40,43 @@ fi
 
 $GRYPE_CMD $IMAGE --fail-on $SEVERITY_LEVEL > $LOGFILE_PATH
 
+if [ $CVE_ENABLE_BIT -gt 0 ]
+then
+    while IFS=$'\r' read line
+    do  
+        cwe_array[$i]=$line
+        ((i++))
+    done < "$CVELOG_PATH"
+fi
+
 input=$LOGFILE_PATH
 while IFS= read -r line
 do
+    if [ $CVE_ENABLE_BIT -gt 0 ]
+    then
+
+        for i in "${cwe_array[@]}"
+        do
+           
+            if [[ $line == *"$i"* ]]
+            then
+                ((CVE_COUNT++))
+            fi
+        done
+    fi
+
     if [[ $line == *"$SEVERITY_LEVEL"* ]]
-        then
-            ((SEVERITY_COUNT++))
-        fi
+    then
+        ((SEVERITY_COUNT++))
+    fi
 done < "$input"
 
 echo "A total number of $SEVERITY_COUNT vulnerabilities found!"
+
+if [ $CVE_ENABLE_BIT -gt 0 ]
+then
+    echo "Encountered the given CVEs $CVE_COUNT time(s) in the $LOGFILE log file!" 
+fi
 
 if [[ $SEVERITY_COUNT -gt 0 && $DOCKER_ENABLE_BIT -eq 1 ]]
 then
