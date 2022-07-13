@@ -61,5 +61,6 @@ done
 ./severitycheck.sh $IMAGE $LOGFILE $SEVERITY_LEVEL $DOCKER_ENABLE_BIT $DOCKER_COMPOSE_PATH $CVE_ENABLE_BIT $CVELOG_PATH
 result=$?
 
+echo ""
 echo "Ending imagecheck"
 echo "-----------------"

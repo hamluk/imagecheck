@@ -1,7 +1,6 @@
 #! /bin/bash
 
 function exit_script {
-    echo "Exiting severitycheck script"
     exit $1
 }
 
@@ -17,8 +16,6 @@ CVELOG_PATH=$7
 LOGFILE_PATH=${LOG_FOLDER}${LOGFILE}
 SEVERITY_COUNT=0
 CVE_COUNT=0
-
-echo "Entering severitycheck script..."
 
 ./pullimage.sh $IMAGE 
 
@@ -44,7 +41,7 @@ if [ $CVE_ENABLE_BIT -gt 0 ]
 then
     while IFS=$'\r' read line
     do  
-        cwe_array[$i]=$line
+        cve_array[$i]=$line
         ((i++))
     done < "$CVELOG_PATH"
 fi
@@ -55,7 +52,7 @@ do
     if [ $CVE_ENABLE_BIT -gt 0 ]
     then
 
-        for i in "${cwe_array[@]}"
+        for i in "${cve_array[@]}"
         do
            
             if [[ $line == *"$i"* ]]
@@ -71,7 +68,7 @@ do
     fi
 done < "$input"
 
-echo "A total number of $SEVERITY_COUNT vulnerabilities found!"
+echo "A total number of $SEVERITY_COUNT vulnerabilities with $SEVERITY_LEVEL severity level found!"
 
 if [ $CVE_ENABLE_BIT -gt 0 ]
 then
